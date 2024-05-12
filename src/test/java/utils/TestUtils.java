@@ -1,13 +1,13 @@
-package com.rudkin.livefootballworldcupscoreboard.utils;
+package utils;
 
-import static com.rudkin.livefootballworldcupscoreboard.utils.ObjectMother.createMatchArgentinaAustralia_3_1;
-import static com.rudkin.livefootballworldcupscoreboard.utils.ObjectMother.createMatchGermanyFrance_2_2;
-import static com.rudkin.livefootballworldcupscoreboard.utils.ObjectMother.createMatchMexicoCanada_0_5;
-import static com.rudkin.livefootballworldcupscoreboard.utils.ObjectMother.createMatchSpainBrazil_10_2;
-import static com.rudkin.livefootballworldcupscoreboard.utils.ObjectMother.createMatchUruguayItaly_6_6;
+import static utils.ObjectMother.createMatchArgentinaAustralia_3_1;
+import static utils.ObjectMother.createMatchGermanyFrance_2_2;
+import static utils.ObjectMother.createMatchMexicoCanada_0_5;
+import static utils.ObjectMother.createMatchSpainBrazil_10_2;
+import static utils.ObjectMother.createMatchUruguayItaly_6_6;
 
-import com.rudkin.livefootballworldcupscoreboard.entities.Match;
-import com.rudkin.livefootballworldcupscoreboard.matchservice.Scoreboard;
+import com.rudkin.livefootballworldcupscoreboard.domain.Match;
+import com.rudkin.livefootballworldcupscoreboard.service.Scoreboard;
 import java.util.List;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;

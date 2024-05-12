@@ -1,28 +1,30 @@
-package com.rudkin.livefootballworldcupscoreboard.matchservice;
+package com.rudkin.livefootballworldcupscoreboard.service;
 
-import com.rudkin.livefootballworldcupscoreboard.entities.Match;
+import com.rudkin.livefootballworldcupscoreboard.domain.Match;
 import com.rudkin.livefootballworldcupscoreboard.exception.MatchAlreadyExistsException;
 import com.rudkin.livefootballworldcupscoreboard.exception.NoSuchGameException;
 import com.rudkin.livefootballworldcupscoreboard.exception.UpdateScoreException;
-import java.util.ArrayList;
+import com.rudkin.livefootballworldcupscoreboard.repository.MatchesRepository;
 import java.util.Comparator;
 import java.util.List;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.stereotype.Service;
 
 @Slf4j
-public class Scoreboard {
+@Service
+@RequiredArgsConstructor
+public class SimpleScoreboard implements Scoreboard {
 
-  private final List<Match> matches;
+  private List<Match> matches;
+  private final MatchesRepository repository;
 
-  public Scoreboard() {
-    this.matches = new ArrayList<>();
-  }
-
+  @Override
   public void startGame(String homeTeam, String awayTeam) {
-    log.info("Starting a new game between {} and {}", homeTeam, awayTeam);
     var gameToStart = new Match(homeTeam, awayTeam);
-
     throwIfExists(gameToStart);
+
+    log.info("Starting a new game between {} and {}", homeTeam, awayTeam);
 
     matches.add(gameToStart);
   }
@@ -39,6 +41,7 @@ public class Scoreboard {
         .anyMatch(game -> game.compareByTeamNames(gameToStart));
   }
 
+  @Override
   public void updateScore(String homeTeam, String awayTeam, int homeTeamScore, int awayTeamScore) {
 
     Match matchToUpdate = matches.stream()
@@ -52,6 +55,7 @@ public class Scoreboard {
     matchToUpdate.updateScore(homeTeamScore, awayTeamScore);
   }
 
+  @Override
   public void finishGame(String homeTeam, String awayTeam) {
     log.info("Finishing game between {} and {}", homeTeam, awayTeam);
     boolean isNotRemoved = !matches.removeIf(
@@ -63,6 +67,7 @@ public class Scoreboard {
     }
   }
 
+  @Override
   public List<Match> getSummary() {
     log.info("Retrieving match summary");
 

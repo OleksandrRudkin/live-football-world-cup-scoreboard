@@ -1,15 +1,19 @@
-package com.rudkin.livefootballworldcupscoreboard.matchservice;
+package com.rudkin.livefootballworldcupscoreboard.service;
 
-import static com.rudkin.livefootballworldcupscoreboard.utils.TestUtils.addMatchesToTheScoreboard;
-import static com.rudkin.livefootballworldcupscoreboard.utils.TestUtils.createMatchWithScore;
-import static com.rudkin.livefootballworldcupscoreboard.utils.TestUtils.getExpectedSummary;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatExceptionOfType;
+import static utils.TestUtils.addMatchesToTheScoreboard;
+import static utils.TestUtils.createMatchWithScore;
+import static utils.TestUtils.getExpectedSummary;
 
-import com.rudkin.livefootballworldcupscoreboard.entities.Match;
+import com.rudkin.livefootballworldcupscoreboard.domain.Match;
 import com.rudkin.livefootballworldcupscoreboard.exception.MatchAlreadyExistsException;
 import com.rudkin.livefootballworldcupscoreboard.exception.NoSuchGameException;
 import com.rudkin.livefootballworldcupscoreboard.exception.UpdateScoreException;
+import com.rudkin.livefootballworldcupscoreboard.repository.HashMapMatchesRepository;
+import com.rudkin.livefootballworldcupscoreboard.repository.MatchesRepository;
+import com.rudkin.livefootballworldcupscoreboard.repository.comparatorstrategy.MatchComparatorByScoreAndTime;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Stream;
 import org.junit.jupiter.api.BeforeEach;
@@ -18,14 +22,24 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
-class ScoreboardTest {
+@SpringBootTest(classes = {SimpleScoreboard.class, HashMapMatchesRepository.class, MatchComparatorByScoreAndTime.class})
+@DirtiesContext(classMode = ClassMode.BEFORE_EACH_TEST_METHOD)
+class SimpleScoreboardTest {
 
+  @Autowired
   private Scoreboard scoreboard;
+  @Autowired
+  private MatchesRepository repository;
+  @Autowired
+  private Comparator<Match> comparator;
 
   @BeforeEach
-  void init() {
-    scoreboard = new Scoreboard();
+  void setUp() {
     scoreboard.startGame("Home Team", "Away Team");
   }
 

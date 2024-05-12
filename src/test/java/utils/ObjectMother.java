@@ -1,6 +1,6 @@
-package com.rudkin.livefootballworldcupscoreboard.utils;
+package utils;
 
-import com.rudkin.livefootballworldcupscoreboard.entities.Match;
+import com.rudkin.livefootballworldcupscoreboard.domain.Match;
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
