@@ -5,6 +5,9 @@ import java.time.LocalDateTime;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
+/**
+ * Represents a football match.
+ */
 @Data
 @EqualsAndHashCode(exclude = {"createdAt", "id"})
 public class Match {
