@@ -21,27 +21,45 @@ public class HashMapMatchesRepository implements MatchesRepository {
 
   @Override
   public boolean add(Match match) {
-    return false;
+    var key = match.asTeamNames();
+
+    Optional<Match> optionalMatch = Optional.ofNullable(matches.putIfAbsent(key, match));
+
+    return optionalMatch.isEmpty();
   }
 
   @Override
   public Optional<Match> findByTeamNames(String homeTeam, String awayTeam) {
-    return Optional.empty();
+    String key = generateMatchKey(homeTeam, awayTeam);
+
+    return Optional.of(matches.get(key));
   }
 
   @Override
-  public boolean remove(String homeTeam, String awayTeam) {
-    return false;
+  public boolean remove(String homeTeam , String awayTeam) {
+    String key = generateMatchKey(homeTeam, awayTeam);
+    Optional<Match> optionalMatch = Optional.ofNullable(matches.remove(key));
+
+    return optionalMatch.isPresent();
   }
 
   @Override
   public boolean update(Match match) {
-    return false;
+    var key = match.asTeamNames();
+    Optional<Match> optionalMatch = Optional.ofNullable(
+        matches.computeIfPresent(key, (k, v) -> match));
+
+    return optionalMatch.isPresent();
   }
 
   @Override
   public List<Match> findAll() {
-    return null;
+    return matches.values().stream()
+        .sorted(comparator)
+        .toList();
   }
 
+  private static String generateMatchKey(String homeTeam , String awayTeam) {
+    return String.join("_", homeTeam, awayTeam);
+  }
 }

@@ -5,8 +5,8 @@ import com.rudkin.livefootballworldcupscoreboard.exception.MatchAlreadyExistsExc
 import com.rudkin.livefootballworldcupscoreboard.exception.NoSuchGameException;
 import com.rudkin.livefootballworldcupscoreboard.exception.UpdateScoreException;
 import com.rudkin.livefootballworldcupscoreboard.repository.MatchesRepository;
-import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -16,50 +16,41 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class SimpleScoreboard implements Scoreboard {
 
-  private List<Match> matches;
   private final MatchesRepository repository;
 
   @Override
   public void startGame(String homeTeam, String awayTeam) {
     var gameToStart = new Match(homeTeam, awayTeam);
-    throwIfExists(gameToStart);
 
     log.info("Starting a new game between {} and {}", homeTeam, awayTeam);
 
-    matches.add(gameToStart);
-  }
+    boolean isAdded = repository.add(gameToStart);
 
-  private void throwIfExists(Match gameToStart) {
-    if (isGameOnScoreboard(gameToStart)) {
+    if (!isAdded) {
       throw new MatchAlreadyExistsException(
-          String.format("The match %s is already on the Scoreboard", gameToStart));
+          String.format("The match %s is already on the Scoreboard", gameToStart.asTeamNames()));
     }
-  }
-
-  private boolean isGameOnScoreboard(Match gameToStart) {
-    return matches.stream()
-        .anyMatch(game -> game.compareByTeamNames(gameToStart));
   }
 
   @Override
   public void updateScore(String homeTeam, String awayTeam, int homeTeamScore, int awayTeamScore) {
+    Optional<Match> matchToUpdate = repository.findByTeamNames(homeTeam, awayTeam);
 
-    Match matchToUpdate = matches.stream()
-        .filter(match -> match.compareByTeamNames(homeTeam, awayTeam))
-        .findFirst()
-        .orElseThrow(() -> new UpdateScoreException(String.format("Match not found: %s vs %s", homeTeam, awayTeam)));
+    Match match = matchToUpdate.orElseThrow(() ->
+        new UpdateScoreException(String.format("Match not found: %s vs %s", homeTeam, awayTeam)));
+
+    match.updateScore(homeTeamScore, awayTeamScore);
 
     log.info("Updating score for game between {} and {}: {} - {}", homeTeam, awayTeam,
                                                                    homeTeamScore, awayTeamScore);
-
-    matchToUpdate.updateScore(homeTeamScore, awayTeamScore);
+    repository.update(match);
   }
 
   @Override
   public void finishGame(String homeTeam, String awayTeam) {
     log.info("Finishing game between {} and {}", homeTeam, awayTeam);
-    boolean isNotRemoved = !matches.removeIf(
-        match -> match.compareByTeamNames(homeTeam, awayTeam));
+
+    boolean isNotRemoved = !repository.remove(homeTeam, awayTeam);
 
     if (isNotRemoved) {
       throw new NoSuchGameException(
@@ -71,19 +62,7 @@ public class SimpleScoreboard implements Scoreboard {
   public List<Match> getSummary() {
     log.info("Retrieving match summary");
 
-    return matches.stream()
-        .sorted(compareByScoreReversed()
-            .thenComparing(compareByIndexReversed()))
-        .toList();
+    return repository.findAll();
   }
 
-  private Comparator<Match> compareByIndexReversed() {
-    return Comparator.comparingLong((Match match) -> matches.indexOf(match))
-        .reversed();
-  }
-
-  private Comparator<Match> compareByScoreReversed() {
-    return Comparator.comparingInt(Match::calculateTotalScore)
-        .reversed();
-  }
 }
